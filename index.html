@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Python Notes - Loops</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <h1>🐍 Python Notes</h1>
+
+  <div class="note-section">
+    <h2>3. For Loop</h2>
+    <p><code>for</code> loop kisi sequence (jaise list, string, range) par iterate karta hai:</p>
+    
+    <div class="code-block">
+      <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      <pre><code>for i in range(5):
+    print("Number:", i)</code></pre>
+    </div>
+  </div>
+
+  <div class="note-section">
+    <h2>4. While Loop</h2>
+    <p><code>while</code> loop tab tak chalta hai jab tak condition true ho:</p>
+    
+    <div class="code-block">
+      <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      <pre><code>count = 0
+while count &lt; 5:
+    print("Count is", count)
+    count += 1</code></pre>
+    </div>
+  </div>
+
+  <script>
+    function copyCode(button) {
+      const code = button.nextElementSibling.querySelector('code').innerText;
+      navigator.clipboard.writeText(code).then(() => {
+        button.innerText = "Copied!";
+        setTimeout(() => {
+          button.innerText = "Copy";
+        }, 2000);
+      });
+    }
+  </script>
+
+</body>
+</html>

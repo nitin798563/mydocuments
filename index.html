@@ -1,49 +1,116 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
-  <title>Python Notes - Loops</title>
+  <title>Render Deployment Notes</title>
   <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
 
-  <h1>🐍 Python Notes</h1>
+  <h1>Render Deployment Useful Tips </h1>
 
   <div class="note-section">
-    <h2>3. For Loop</h2>
-    <p><code>for</code> loop kisi sequence (jaise list, string, range) par iterate karta hai:</p>
-    
+    <h2>1. FIx migration issue is render </h2>
+    <p>Sometimes there is issue generate that is related to migration during deployment. For this reason field entry is not properly created.
+      To fix this issue we follows these commands-
+    </p>
+    <P>1. Create migration loader view</P>
     <div class="code-block">
       <button class="copy-btn" onclick="copyCode(this)">Copy</button>
-      <pre><code>for i in range(5):
-    print("Number:", i)</code></pre>
-    </div>
+      <pre><code>from django.core.management import call_command
+from django.http import HttpResponse
+
+def migrate_view(request):
+    try:
+        call_command('makemigrations')
+        call_command('migrate')
+        return HttpResponse("✅ Migration done successfully!")
+    except Exception as e:
+        return HttpResponse(f"❌ Migration error: {e}")
+      </code></pre>
+      <P>2. Add route of view in urls.py </P>
+    <div class="code-block">
+      <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      <pre><code>path('run-migrations/', views.migrate_view),
+      </code></pre>
+      <P>3. After deployment open this below url</P>
+    <div class="code-block">
+      <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      <pre><code>https://yourapp.onrender.com/run-migrations
+      </code></pre>
+      <P>If migration is successfull then return message"Migration done successfully"</P>
+      <P>It is mandatory to delete both migrate_view from views.py and run-migrations/ from urls.py</P>
+
+    
   </div>
 
   <div class="note-section">
-    <h2>4. While Loop</h2>
-    <p><code>while</code> loop tab tak chalta hai jab tak condition true ho:</p>
-    
+    <h2>2. How to migrate Superuser entry</h2>
+    <p>If we use free trail version of render deployment, then shell option is disable for free version that is why we
+      are not unable to run createsuperuser command so we have no credentials to enter in admin panel.To solve this issue we use following steps-
+    </p>
+    <P>1. Create superuser on local </P>
     <div class="code-block">
       <button class="copy-btn" onclick="copyCode(this)">Copy</button>
-      <pre><code>count = 0
-while count &lt; 5:
-    print("Count is", count)
-    count += 1</code></pre>
-    </div>
-  </div>
+      <pre><code>python manage.py createsuperuser
+      </code></pre>
+    <P>2. Run below command in cmd - This command store username and encrypted password in superuser.json. This json file must be in UTF-8.If file is in UTF-16 then 
+      convert it into UTF-8. In vs-code click UTF-16(bottom right) -> select "Save on Encoding" -> choose UTF-8(without BOM) -> Save file again. Check again file is UTF-8. If content in this
+    is null, null,null,..... this shows file is corrupt. so we create new file. </P>
+      <div class="code-block">
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        <pre><code>python manage.py dumpdata auth.user --indent 2 > superuser.json
+      </code></pre>
+    <P>3. Create temporary superuser view in views.py </P>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <pre><code>from django.core.management import call_command
+from django.http import HttpResponse
 
-  <script>
-    function copyCode(button) {
-      const code = button.nextElementSibling.querySelector('code').innerText;
-      navigator.clipboard.writeText(code).then(() => {
-        button.innerText = "Copied!";
-        setTimeout(() => {
-          button.innerText = "Copy";
-        }, 2000);
-      });
-    }
-  </script>
+def create_admin(request):
+    try:
+        call_command('loaddata', 'superuser.json')
+        return HttpResponse("✅ Superuser created successfully!")
+    except Exception as e:
+        return HttpResponse(f"❌ Error: {e}")
+</code></pre>
+    <P>4. Add this views in url </P>
+      <div class="code-block">
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        <pre><code>path('create-admin/', views.create_admin),
+      </code></pre>
+    <P>4. After Deployment, Open this url</P>
+      <div class="code-block">
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        <pre><code>https://yourapp.onrender.com/load-admin/
+      </code></pre>
+      <P>If output is : ✅ Superuser created successfully!</P>
+    <P>5. After that open admin panel  </P>
+      <div class="code-block">
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        <pre><code>https://yourapp.onrender.com/admin/
+      </code></pre>
+        </div>
+      <p>Enter Username and Password, then will be successfully login</p>
+      <p>✅After successfully login, delete both 'load-admin/' in urls.py and 'view'' in views.py</p>
+      <p>It is mandatory to delete both urls and view due to some security issues</p>
+
+        
+
+      <script>
+        function copyCode(button) {
+          const code = button.nextElementSibling.querySelector('code').innerText;
+          navigator.clipboard.writeText(code).then(() => {
+            button.innerText = "Copied!";
+            setTimeout(() => {
+              button.innerText = "Copy";
+            }, 2000);
+          });
+        }
+      </script>
 
 </body>
+
 </html>
